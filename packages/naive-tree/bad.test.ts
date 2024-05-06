@@ -1,15 +1,19 @@
 import fs from "node:fs";
 import { Client } from "pg";
-import { GenericContainer, Wait, StartedTestContainer } from "testcontainers";
+import {
+  GenericContainer,
+  type StartedTestContainer,
+  Wait,
+} from "testcontainers";
 import {
   afterAll,
+  afterEach,
   beforeAll,
   beforeEach,
-  afterEach,
   describe,
   test,
 } from "vitest";
-import { listComments } from "./gen/bad/query_sql";
+import * as query from "./gen/bad/query_sql";
 
 describe("bad case", () => {
   let container: StartedTestContainer | null = null;
@@ -18,7 +22,7 @@ describe("bad case", () => {
   beforeAll(async () => {
     container = await new GenericContainer("postgres:latest")
       .withEnvironment({
-        POSTGRES_DB: "naive_tree",
+        POSTGRES_DB: "naive_tree_bad",
         POSTGRES_USER: "postgres",
         POSTGRES_PASSWORD: "password",
       })
@@ -30,7 +34,7 @@ describe("bad case", () => {
     client = new Client({
       host: container.getHost(),
       port: container.getMappedPort(5432),
-      database: "naive_tree",
+      database: "naive_tree_bad",
       user: "postgres",
       password: "password",
     });
@@ -58,8 +62,30 @@ describe("bad case", () => {
     await client?.query("ROLLBACK;");
   });
 
-  test("test query", async () => {
-    const comments = await listComments(client!);
+  test("再帰的にコメントツリーを取得する", async () => {
+    const comments = await query.getCommentTree(client!);
+    console.table(comments);
+  });
+
+  test("コメントツリーの中間ノードの更新", async () => {
+    // 削除対象のコメントの親IDを取得
+    const deleteCommentId = 8;
+    const row = await query.getParentId(client!, {
+      commentId: deleteCommentId,
+    });
+    if (!row || row.parentId === null) {
+      throw new Error("Parent ID not found");
+    }
+    // 削除対象のコメントの親IDを更新
+    await query.updateParentId(client!, {
+      updateId: row.parentId,
+      parentId: deleteCommentId,
+    });
+    // コメントの削除
+    await query.deleteComment(client!, { commentId: deleteCommentId });
+
+    // コメントツリーの確認
+    const comments = await query.getCommentTree(client!);
     console.table(comments);
   });
 });
