@@ -66,6 +66,7 @@ describe("playground", () => {
     const bugs = await query.getBugsByOneTag(client!, {
       tag: "Tag3",
     });
+    console.log("Tag3 の Bug:");
     console.table(bugs);
 
     // これでも複数の Tag を検索できるが、数が増える場合はスケールしない
@@ -73,6 +74,7 @@ describe("playground", () => {
       tag1: "Tag1",
       tag2: "Tag2",
     });
+    console.log("Tag1 と Tag2 の Bug:");
     console.table(bugs_);
   });
 });

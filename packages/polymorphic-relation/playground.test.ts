@@ -66,19 +66,23 @@ describe("playground", () => {
     const bugComments = await query.getBugCommentsById(client!, {
       issueId: 1,
     });
-    console.log("issue_id = 1 コメント:");
+    console.log("issue_id = 1 の複数のコメント:");
     // 複数のコメントが取得される
     console.table(bugComments);
 
     const bugs = await query.getRelatedIssueByCommentIds(client!, {
       commentId: 3,
     });
-    // コメントに紐づく bug が取得される (Unique 制約により必ず 1 件)
+    console.log(
+      "コメントに紐づく bug が取得される (Unique 制約により必ず 1 件)"
+    );
     console.table(bugs);
     const features = await query.getRelatedIssueByCommentIds(client!, {
       commentId: 5,
     });
-    // コメントに紐づく feature も取得される (Unique 制約により必ず 1 件)
+    console.log(
+      "コメントに紐づく feature が取得される (Unique 制約により必ず 1 件)"
+    );
     console.table(features);
   });
 });
