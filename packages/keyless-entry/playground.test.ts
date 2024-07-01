@@ -15,7 +15,7 @@ import {
 } from "vitest";
 import * as query from "./gen/query_sql";
 
-describe("bad case", () => {
+describe("playground", () => {
   let container: StartedTestContainer | null = null;
   let client: Client | null = null;
 

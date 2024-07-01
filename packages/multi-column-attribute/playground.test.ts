@@ -22,7 +22,7 @@ describe("playground", () => {
   beforeAll(async () => {
     container = await new GenericContainer("postgres:latest")
       .withEnvironment({
-        POSTGRES_DB: "polymorphic_relation",
+        POSTGRES_DB: "multi_column_attribute",
         POSTGRES_USER: "postgres",
         POSTGRES_PASSWORD: "password",
       })
@@ -34,7 +34,7 @@ describe("playground", () => {
     client = new Client({
       host: container.getHost(),
       port: container.getMappedPort(5432),
-      database: "polymorphic_relation",
+      database: "multi_column_attribute",
       user: "postgres",
       password: "password",
     });
@@ -63,22 +63,16 @@ describe("playground", () => {
   });
 
   test("クエリの確認", async () => {
-    const bugComments = await query.getBugCommentsById(client!, {
-      issueId: 1,
+    const bugs = await query.getBugsByOneTag(client!, {
+      tag: "Tag3",
     });
-    console.log("issue_id = 1 コメント:");
-    // 複数のコメントが取得される
-    console.table(bugComments);
-
-    const bugs = await query.getRelatedIssueByCommentIds(client!, {
-      commentId: 3,
-    });
-    // コメントに紐づく bug が取得される (Unique 制約により必ず 1 件)
     console.table(bugs);
-    const features = await query.getRelatedIssueByCommentIds(client!, {
-      commentId: 5,
+
+    // これでも複数の Tag を検索できるが、数が増える場合はスケールしない
+    const bugs_ = await query.getBugsByMultiTags(client!, {
+      tag1: "Tag1",
+      tag2: "Tag2",
     });
-    // コメントに紐づく feature も取得される (Unique 制約により必ず 1 件)
-    console.table(features);
+    console.table(bugs_);
   });
 });
